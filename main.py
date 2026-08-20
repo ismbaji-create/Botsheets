@@ -24,6 +24,8 @@ import os
 import json
 import logging
 import threading
+import asyncio
+import time
 
 import gspread
 from google.oauth2.service_account import Credentials
@@ -57,8 +59,16 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 _creds_info = json.loads(GOOGLE_CREDENTIALS_JSON)
 _creds = Credentials.from_service_account_info(_creds_info, scopes=SCOPES)
 _gc = gspread.authorize(_creds)
-_sheet = _gc.open_by_key(GOOGLE_SHEET_ID)
-_ws = _sheet.sheet1  # first tab
+
+# Retry loop in case Google Sheets API has a brief connection timeout on boot
+for attempt in range(5):
+    try:
+        _sheet = _gc.open_by_key(GOOGLE_SHEET_ID)
+        _ws = _sheet.sheet1  # first tab
+        break
+    except Exception as e:
+        log.warning(f"Google Sheets connection attempt {attempt+1}/5 failed: {e}")
+        time.sleep(3)
 
 # Column index cache: {header_name: 1-based column number}
 _col_index = {}
@@ -218,10 +228,7 @@ def run_flask():
 
 
 def run_bot():
-    import asyncio
-
-def run_bot():
-    # Set explicit event loop for Python 3.10+ / 3.14 background thread compatibility
+    # Set explicit event loop for Python 3.10+ / 3.14 compatibility
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
