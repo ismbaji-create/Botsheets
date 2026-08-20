@@ -218,6 +218,13 @@ def run_flask():
 
 
 def run_bot():
+    import asyncio
+
+def run_bot():
+    # Set explicit event loop for Python 3.10+ / 3.14 background thread compatibility
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     application = Application.builder().token(BOT_TOKEN).concurrent_updates(False).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("unlock", unlock))
