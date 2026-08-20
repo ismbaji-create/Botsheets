@@ -1,0 +1,5 @@
+python-telegram-bot==21.6
+gspread==6.1.4
+google-auth==2.35.0
+Flask==3.0.3
+waitress==3.0.1
